@@ -1,0 +1,39 @@
+[tool.poetry]
+name = "yamlen"
+version = "0.1.0"
+description = "A PyYAML thin wrapper."
+authors = ["Yu Mochizuki <ymoch.dev@gmail.com>"]
+repository = "https://github.com/ymoch/yamlen"
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+pyyaml = "^5.4.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.4"
+pytest-mock = "^3.6.1"
+pytest-flake8 = "^1.0.7"
+pytest-mccabe = "^2.0"
+pytest-mypy = "^0.8.1"
+pytest-cov = "^2.12.1"
+types-pyyaml = "^0.1.6"
+codecov = "^2.1.11"
+black = "^21.6b0"
+
+[tool.pytest.ini_options]
+testpaths = ["yamlen", "tests"]
+flake8-max-line-length = 99
+mccabe-complexity = 10
+addopts = [
+    "--flake8",
+    "--mypy",
+    "--mypy-ignore-missing-imports",
+    "--mccabe",
+    "--cov=yamlen",
+    "--cov-report=term-missing",
+]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
