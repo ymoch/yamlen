@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "yamlen"
+version = "0.1.0"
+description = "A PyYAML thin wrapper."
+authors = ["Yu Mochizuki <ymoch.dev@gmail.com>"]
+repository = "https://github.com/ymoch/yamlen"
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
