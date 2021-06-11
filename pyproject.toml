@@ -19,6 +19,7 @@ pytest-mypy = "^0.8.1"
 pytest-cov = "^2.12.1"
 types-pyyaml = "^0.1.6"
 codecov = "^2.1.11"
+black = "^21.6b0"
 
 [tool.pytest.ini_options]
 testpaths = ["yamlen", "tests"]
