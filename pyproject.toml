@@ -10,8 +10,8 @@ classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
-  "Software Development :: Libraries :: Python Modules",
-  "Text Processing :: Markup",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Text Processing :: Markup",
 ]
 
 [tool.poetry.dependencies]
