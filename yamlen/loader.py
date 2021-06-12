@@ -23,39 +23,48 @@ __all__ = ("Loader", "Tag", "TagContext")
 
 
 class TagContext:
+    """
+    A tag construction context.
+    """
+
     def __init__(
         self,
         loader: Loader,
         constructor: BaseConstructor,
-        node: Node,
         origin: Optional[str] = None,
     ):
         self._loader = loader
         self._constructor = constructor
-        self._node = node
         self._origin = origin
 
     @property
     def loader(self) -> Loader:
+        """
+        Returns a current YAML loader.
+        """
         return self._loader
 
     @property
     def constructor(self) -> BaseConstructor:
+        """
+        Returns a PyYAML constructor.
+        """
         return self._constructor
 
     @property
-    def node(self) -> Node:
-        return self._node
-
-    @property
     def origin(self) -> Optional[str]:
+        """
+        Returns the origin path of the loading file if exists.
+        """
         return self._origin
 
 
 class Tag(ABC):
     @abstractmethod
-    def construct(self, context: TagContext) -> Any:
-        """Construct a tag."""
+    def construct(self, node: Node, context: TagContext) -> Any:
+        """
+        Construct the corresponding Python object to the given node.
+        """
 
 
 class Loader:
@@ -80,6 +89,9 @@ class Loader:
         self._ctor.add_constructor(name, partial(self._apply_tag, tag))
 
     def load(self, stream: TextIO, origin: Optional[str] = None) -> object:
+        """
+        Parse the first YAML document in a stream and produce the corresponding Python object.
+        """
         try:
             with self._on_origin(origin):
                 return _load(stream, self._Loader)
@@ -87,6 +99,9 @@ class Loader:
             raise YamlenError(cause=error)
 
     def load_from_path(self, path: str) -> object:
+        """
+        Parse the first YAML document in a file and produce the corresponding Python object.
+        """
         origin = os.path.dirname(path)
         try:
             with open(path) as stream:
@@ -95,6 +110,9 @@ class Loader:
             raise YamlenError(cause=error)
 
     def load_all(self, stream: TextIO, origin: Optional[str] = None) -> Iterator:
+        """
+        Parse all YAML documents in a stream and produce corresponding Python objects.
+        """
         try:
             with self._on_origin(origin):
                 yield from _load_all(stream, self._Loader)
@@ -102,6 +120,9 @@ class Loader:
             raise YamlenError(cause=error)
 
     def load_all_from_path(self, path: str) -> Iterator:
+        """
+        Parse all YAML documents in a file and produce corresponding Python objects.
+        """
         origin = os.path.dirname(path)
         try:
             with open(path) as stream:
@@ -110,11 +131,9 @@ class Loader:
             raise YamlenError(cause=error)
 
     def _apply_tag(self, tag: Tag, ctor: BaseConstructor, node: Node) -> object:
-        context = TagContext(
-            loader=self, constructor=ctor, node=node, origin=self._origin
-        )
+        context = TagContext(loader=self, constructor=ctor, origin=self._origin)
         with on_node(node):
-            return tag.construct(context)
+            return tag.construct(node, context)
 
     @contextmanager
     def _on_origin(self, origin: Optional[str]) -> Iterator:
