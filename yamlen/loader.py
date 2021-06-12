@@ -19,16 +19,42 @@ from yaml.scanner import Scanner
 
 from .error import YamlenError, on_node
 
+__all__ = ("Loader", "Tag", "TagContext")
 
-class Tag(ABC):
-    @abstractmethod
-    def construct(
+
+class TagContext:
+    def __init__(
         self,
         loader: Loader,
         constructor: BaseConstructor,
         node: Node,
-        origin: str = ".",
-    ) -> object:
+        origin: str = "."
+    ):
+        self._loader = loader
+        self._constructor = constructor
+        self._node = node
+        self._origin = origin
+
+    @property
+    def loader(self) -> Loader:
+        return self._loader
+
+    @property
+    def constructor(self) -> BaseConstructor:
+        return self._constructor
+
+    @property
+    def node(self) -> Node:
+        return self._node
+
+    @property
+    def origin(self) -> str:
+        return self._origin
+
+
+class Tag(ABC):
+    @abstractmethod
+    def construct_by_context(self, context: TagContext):
         """Construct a tag."""
 
 
@@ -84,8 +110,9 @@ class Loader:
             raise YamlenError(cause=error)
 
     def _apply_tag(self, tag: Tag, ctor: BaseConstructor, node: Node) -> object:
+        context = TagContext(loader=self, constructor=ctor, node=node, origin=self._origin)
         with on_node(node):
-            return tag.construct(self, ctor, node, origin=self._origin)
+            return tag.construct_by_context(context)
 
     @contextmanager
     def _on_origin(self, origin: str) -> Iterator:
