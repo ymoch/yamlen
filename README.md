@@ -73,3 +73,13 @@
 'bar'
 
 ```
+
+## License
+
+[![MIT License](https://img.shields.io/badge/License-MIT-brightgreen.svg)][MIT License]
+
+Copyright (c) 2021 Yu Mochizuki
+
+[Circle CI]: https://circleci.com/gh/ymoch/yamlen
+[Codecov]: https://codecov.io/gh/ymoch/yamlen
+[MIT License]: https://opensource.org/licenses/MIT
