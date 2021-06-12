@@ -6,7 +6,7 @@ from typing import Optional, Iterator
 from yaml import Mark, Node
 
 
-class YamlenError(Exception):
+class YamlenError(RuntimeError):
     def __init__(
         self,
         message: Optional[str] = None,
