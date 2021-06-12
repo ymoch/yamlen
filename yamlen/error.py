@@ -6,22 +6,13 @@ from typing import Optional, Iterator
 from yaml import Mark, Node
 
 
-class YamlenError(Exception):
-    def __init__(
-        self,
-        message: Optional[str] = None,
-        mark: Optional[Mark] = None,
-        cause: Optional[Exception] = None,
-    ):
-        self._message = message
-        self._mark = mark
+class YamlenError(RuntimeError):
+    def __init__(self, cause: Exception, mark: Optional[Mark] = None):
         self._cause = cause
+        self._mark = mark
 
     def __str__(self) -> str:
         lines = []
-
-        if self._message is not None:
-            lines.append(self._message)
         if self._cause:
             lines.append(str(self._cause))
         if self._mark:

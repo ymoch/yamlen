@@ -18,9 +18,9 @@ def loader():
 @mark.parametrize(
     ("content", "expected_message"),
     (
-        ("!include 1", '", line 1, column 1'),
-        ("!include []", '", line 1, column 1'),
-        ("!include {}", '", line 1, column 1'),
+        ("!include", 'given no path'),
+        ("!include []", 'expected a scalar node'),
+        ("!include {}", 'expected a scalar node'),
     ),
 )
 def test_given_invalid_inclusion(loader, content, expected_message):
