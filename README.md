@@ -73,3 +73,6 @@
 'bar'
 
 ```
+
+[Circle CI]: https://circleci.com/gh/ymoch/yamlen
+[Codecov]: https://codecov.io/gh/ymoch/yamlen
