@@ -1,94 +1,90 @@
 from io import StringIO
-from unittest.mock import call
+from typing import Optional
 
-from pytest import fixture, raises
+from pytest import raises
+from yaml import ScalarNode
 
+from yamlen import TagContext
 from yamlen.error import YamlenError
-from yamlen.loader import Loader
-from yamlen.tag.impl.inclusion import InclusionTag
+from yamlen.loader import Loader, Tag
 
 
-@fixture
-def loader() -> Loader:
+class BypassTag(Tag):
+    def __init__(self, expected_path: Optional[str]):
+        self._expected_path = expected_path
+
+    def construct(self, context: TagContext) -> object:
+        assert context.origin == self._expected_path
+
+        node = context.node
+        assert isinstance(node, ScalarNode)
+        return context.constructor.construct_scalar(node)
+
+
+def test_load_given_invalid_content():
     loader = Loader()
-    loader.add_tag("!include", InclusionTag())
-    return loader
-
-
-def test_load_given_invalid_content(loader):
-    stream = StringIO("!invalid")
     with raises(YamlenError) as error_info:
-        loader.load(stream)
+        loader.load(StringIO("!invalid"))
     assert '", line 1, column 1' in str(error_info.value)
 
 
-def test_load_all(mocker, loader):
-    stream = StringIO("1\n---\n!include inner/foo.yml\n---\n!x\n---\n2")
-    included_content = StringIO("foo")
+def test_load_all():
+    stream = StringIO("1\n---\n!bypass 123\n---\n!x\n---\n2")
 
-    open_mock = mocker.patch("builtins.open")
-    open_mock.return_value = included_content
-
+    loader = Loader()
+    loader.add_tag("!bypass", BypassTag(expected_path=None))
     actual = loader.load_all(stream)
     assert next(actual) == 1
-    assert next(actual) == "foo"
+    assert next(actual) == "123"
     with raises(YamlenError):
         next(actual)
     with raises(StopIteration):
         next(actual)
 
-    assert included_content.closed
-    open_mock.assert_called_once_with("./inner/foo.yml")
 
-
-def test_load_from_path_not_found(mocker, loader):
+def test_load_from_path_not_found(mocker):
     mocker.patch("builtins.open", side_effect=FileNotFoundError("message"))
+
+    loader = Loader()
     with raises(YamlenError):
         loader.load_from_path("/////foo/bar/baz")
 
 
-def test_load_from_path(mocker, loader):
-    content = StringIO("!include inner/foo.yml")
-    included_content = StringIO("foo")
+def test_load_from_path(mocker):
+    content = StringIO("!bypass xyz")
+    open_mock = mocker.patch("builtins.open", return_value=content)
 
-    open_mock = mocker.patch("builtins.open")
-    open_mock.side_effect = [content, included_content]
-
+    loader = Loader()
+    loader.add_tag("!bypass", BypassTag(expected_path="path/to"))
     actual = loader.load_from_path("path/to/scenario.yml")
-    assert actual == "foo"
+    assert actual == "xyz"
 
     assert content.closed
-    assert included_content.closed
-    open_mock.assert_has_calls(
-        [call("path/to/scenario.yml"), call("path/to/inner/foo.yml")]
-    )
+    open_mock.assert_called_once_with("path/to/scenario.yml")
 
 
-def test_load_all_from_path_not_found(mocker, loader):
+def test_load_all_from_path_not_found(mocker):
     mocker.patch("builtins.open", side_effect=FileNotFoundError("message"))
 
+    loader = Loader()
     objs = loader.load_all_from_path("/////foo/bar/baz")
     with raises(YamlenError):
         next(objs)
 
 
-def test_load_all_from_path(mocker, loader):
-    content = StringIO("1\n---\n!include inner/foo.yml\n---\n!x\n---\n2\n")
-    included_content = StringIO("foo")
+def test_load_all_from_path(mocker):
+    content = StringIO("1\n---\n!bypass abc\n---\n!x\n---\n2\n")
+    open_mock = mocker.patch("builtins.open", return_value=content)
 
-    open_mock = mocker.patch("builtins.open")
-    open_mock.side_effect = [content, included_content]
-
+    loader = Loader()
+    loader.add_tag("!bypass", BypassTag(expected_path="path/to"))
     actual = loader.load_all_from_path("path/to/scenario.yml")
     assert next(actual) == 1
-    assert next(actual) == "foo"
+    assert next(actual) == "abc"
     with raises(YamlenError):
         next(actual)
     with raises(StopIteration):
         next(actual)
 
     assert content.closed
-    assert included_content.closed
-    open_mock.assert_has_calls(
-        [call("path/to/scenario.yml"), call("path/to/inner/foo.yml")]
-    )
+    open_mock.assert_called_once_with("path/to/scenario.yml")

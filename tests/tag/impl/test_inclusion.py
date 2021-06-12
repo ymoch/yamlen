@@ -15,33 +15,45 @@ def loader():
     return loader
 
 
+def test_given_no_origin(mocker, loader):
+    open_mock = mocker.patch("builtins.open")
+
+    stream = StringIO("!include foo.yml")
+    with raises(YamlenError) as error_info:
+        loader.load(stream)
+    assert "no origin" in str(error_info.value)
+
+    open_mock.assert_not_called()
+
+
 @mark.parametrize(
     ("content", "expected_message"),
     (
-        ("!include", 'given no path'),
-        ("!include []", 'expected a scalar node'),
-        ("!include {}", 'expected a scalar node'),
+        ("!include", "given no path"),
+        ("!include []", "expected a scalar node"),
+        ("!include {}", "expected a scalar node"),
     ),
 )
 def test_given_invalid_inclusion(loader, content, expected_message):
     stream = StringIO(content)
     with raises(YamlenError) as error_info:
-        loader.load(stream)
+        loader.load(stream, origin=".")
     assert expected_message in str(error_info.value)
 
 
 def test_given_recursive_inclusion_error(mocker, loader):
-    included_stream = StringIO("\n !foo")
     open_mock = mocker.patch("builtins.open")
-    open_mock.return_value = included_stream
+    open_mock.return_value = StringIO("\n !foo")
 
     stream = StringIO("!include foo.yml")
     with raises(YamlenError) as error_info:
-        loader.load(stream)
+        loader.load(stream, origin=".")
     message = str(error_info.value)
     assert "!foo" in message
     assert '", line 1, column 1' in message
     assert '", line 2, column 2' in message
+
+    open_mock.assert_called_once_with(os.path.join(".", "foo.yml"))
 
 
 def test_given_recursive_inclusion(mocker, loader):
@@ -73,10 +85,11 @@ def test_given_recursive_inclusion(mocker, loader):
 
 
 def test_given_wildcard_inclusion(mocker, loader):
-    iglob_mock = mocker.patch('glob.iglob')
-    iglob_mock.side_effect = lambda path, recursive: iter([f'glob:{path}:{recursive}'])
+    iglob_mock = mocker.patch("glob.iglob")
+    iglob_mock.side_effect = lambda path, recursive: iter([f"glob:{path}:{recursive}"])
 
-    stream = StringIO(r'''
+    stream = StringIO(
+        r"""
     'asterisk': !include '*.yml'
     'double-asterisk': !include '**.yml'
     'question': !include '?.yml'
@@ -84,16 +97,17 @@ def test_given_wildcard_inclusion(mocker, loader):
     'parenthesis-only-closing': !include '].yml'
     'empty-parenthesis': !include '[].yml'
     'filled-parenthesis': !include '[abc].yml'
-    ''')
-    open_mock = mocker.patch('builtins.open')
+    """
+    )
+    open_mock = mocker.patch("builtins.open")
     open_mock.side_effect = lambda path: StringIO(path)
 
-    actual = loader.load(stream, origin='base/path/')
+    actual = loader.load(stream, origin="base/path/")
     assert isinstance(actual, dict)
-    assert actual['asterisk'] == ['glob:base/path/*.yml:True']
-    assert actual['double-asterisk'] == ['glob:base/path/**.yml:True']
-    assert actual['question'] == ['glob:base/path/?.yml:True']
-    assert actual['parenthesis-only-closing'] == 'base/path/].yml'
-    assert actual['parenthesis-only-opening'] == 'base/path/[.yml'
-    assert actual['empty-parenthesis'] == 'base/path/[].yml'
-    assert actual['filled-parenthesis'] == ['glob:base/path/[abc].yml:True']
+    assert actual["asterisk"] == ["glob:base/path/*.yml:True"]
+    assert actual["double-asterisk"] == ["glob:base/path/**.yml:True"]
+    assert actual["question"] == ["glob:base/path/?.yml:True"]
+    assert actual["parenthesis-only-closing"] == "base/path/].yml"
+    assert actual["parenthesis-only-opening"] == "base/path/[.yml"
+    assert actual["empty-parenthesis"] == "base/path/[].yml"
+    assert actual["filled-parenthesis"] == ["glob:base/path/[abc].yml:True"]
