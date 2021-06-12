@@ -28,7 +28,7 @@ class TagContext:
         loader: Loader,
         constructor: BaseConstructor,
         node: Node,
-        origin: Optional[str] = None
+        origin: Optional[str] = None,
     ):
         self._loader = loader
         self._constructor = constructor
@@ -110,7 +110,9 @@ class Loader:
             raise YamlenError(cause=error)
 
     def _apply_tag(self, tag: Tag, ctor: BaseConstructor, node: Node) -> object:
-        context = TagContext(loader=self, constructor=ctor, node=node, origin=self._origin)
+        context = TagContext(
+            loader=self, constructor=ctor, node=node, origin=self._origin
+        )
         with on_node(node):
             return tag.construct(context)
 

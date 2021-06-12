@@ -15,7 +15,9 @@ class InclusionTag(Tag):
     def construct(self, context: TagContext) -> object:
         origin = context.origin
         if not origin:
-            raise ValueError("cannot decide the target directory because no origin path is given")
+            raise ValueError(
+                "cannot decide the target directory because no origin path is given"
+            )
 
         node = context.node
         if not isinstance(node, ScalarNode):
