@@ -2,7 +2,7 @@ from io import StringIO
 from typing import Optional
 
 from pytest import raises
-from yaml import ScalarNode
+from yaml import Node, ScalarNode
 
 from yamlen import TagContext
 from yamlen.error import YamlenError
@@ -13,10 +13,9 @@ class BypassTag(Tag):
     def __init__(self, expected_path: Optional[str]):
         self._expected_path = expected_path
 
-    def construct(self, context: TagContext) -> object:
+    def construct(self, node: Node, context: TagContext) -> object:
         assert context.origin == self._expected_path
 
-        node = context.node
         assert isinstance(node, ScalarNode)
         return context.constructor.construct_scalar(node)
 

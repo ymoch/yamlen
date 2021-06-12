@@ -2,7 +2,7 @@ import glob
 import os
 import re
 
-from yaml import ScalarNode
+from yaml import Node, ScalarNode
 
 from yamlen.loader import TagContext, Tag
 
@@ -12,14 +12,13 @@ _WILDCARDS_REGEX = re.compile(r"^.*(\*|\?|\[!?.+]).*$")
 
 
 class InclusionTag(Tag):
-    def construct(self, context: TagContext) -> object:
+    def construct(self, node: Node, context: TagContext) -> object:
         origin = context.origin
         if not origin:
             raise ValueError(
                 "cannot decide the target directory because no origin path is given"
             )
 
-        node = context.node
         if not isinstance(node, ScalarNode):
             raise ValueError(f"expected a scalar node, but found {node.tag}")
 
