@@ -6,7 +6,7 @@ import os
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from functools import partial
-from typing import Iterator, TextIO
+from typing import Iterator, Optional, TextIO
 
 from yaml import Node, MarkedYAMLError
 from yaml import load as _load, load_all as _load_all
@@ -28,7 +28,7 @@ class TagContext:
         loader: Loader,
         constructor: BaseConstructor,
         node: Node,
-        origin: str = "."
+        origin: Optional[str] = None
     ):
         self._loader = loader
         self._constructor = constructor
@@ -48,7 +48,7 @@ class TagContext:
         return self._node
 
     @property
-    def origin(self) -> str:
+    def origin(self) -> Optional[str]:
         return self._origin
 
 
