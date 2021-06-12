@@ -1,63 +1,75 @@
-# yamlen - a Thin PyYAML Wrapper
+# Yamlen - a Thin PyYAML Wrapper
+
+[![CircleCI](https://circleci.com/gh/ymoch/yamlen.svg?style=svg)][Circle CI]
+[![Codecov](https://codecov.io/gh/ymoch/yamlen/branch/main/graph/badge.svg)][Codecov]
 
 ## Features
 - Contextual tag construction.
 
 ## Examples
 
+### Create a Loader
+```
+>>> from yamlen import Loader
+>>> loader = Loader()
+
+```
+
+
 ### Load YAML documents in Streams
 
-```python
-from io import StringIO
-from yamlen import Loader
+```
+>>> from io import StringIO
 
-loader = Loader()
+>>> stream = StringIO("foo")
+>>> loader.load(stream)
+'foo'
 
-stream = StringIO("foo")
-assert loader.load(stream) == "foo"
-
-stream = StringIO("foo\n---\nbar")
-assert list(loader.load_all(stream)) == ["foo", "bar"]
+>>> stream = StringIO("foo\n---\nbar")
+>>> list(loader.load_all(stream))
+['foo', 'bar']
 
 ```
 
 ### Load YAML Documents in Files.
 
-```python
-import os
-from tempfile import TemporaryDirectory
-from yamlen import Loader
+```
+>>> import os
+>>> from tempfile import TemporaryDirectory
 
-loader = Loader()
+>>> with TemporaryDirectory() as dir_path:
+...     path = os.path.join(dir_path, "example.yml")
+...     with open(path, "w") as f:
+...         _ = f.write("foo")
+...     loader.load_from_path(path)
+'foo'
 
-with TemporaryDirectory() as temp_dir:
-    path = os.path.join(temp_dir.name, "example.yml")
-    with open(path, "w") as f:
-        f.write("foo\n---\nbar")
+>>> with TemporaryDirectory() as dir_path:
+...     path = os.path.join(dir_path, "example.yml")
+...     with open(path, "w") as f:
+...         _ = f.write("foo\n---\nbar")
+...     list(loader.load_all_from_path(path))
+['foo', 'bar']
 
-    assert loader.load_from_path(path) == "foo"
-    assert list(loader.load_all_from_path(path)) == ["foo", "bar"]
 ```
 
 ### Contextual tag construction: include another YAML file.
 
-```python
-import os
-from tempfile import TemporaryDirectory
-from yamlen import Loader
-from yamlen.tag.impl.inclusion import InclusionTag
+```
+>>> from yamlen.tag.impl.inclusion import InclusionTag
+>>> loader.add_tag("!include", InclusionTag())
 
-loader = Loader()
-loader.add_tag("!include", InclusionTag())
+```
 
-with TemporaryDirectory() as temp_dir:
-    foo_path = os.path.join(temp_dir.name, "foo.yml")
-    with open(foo_path, "w") as f:
-        f.write("!include ./bar.yml")
-        
-    bar_path = os.path.join(temp_dir.name, "bar.yml")
-    with open(bar_path, "w") as f:
-        f.write("bar")
+```
+>>> with TemporaryDirectory() as dir_path:
+...     foo_path = os.path.join(dir_path, "foo.yml")
+...     bar_path = os.path.join(dir_path, "bar.yml")
+...     with open(foo_path, "w") as f:
+...         _ = f.write(f"!include ./bar.yml")
+...     with open(bar_path, "w") as f:
+...         _ = f.write("bar")
+...     loader.load_from_path(foo_path)
+'bar'
 
-    assert loader.load_from_path(foo_path) == "bar"
 ```

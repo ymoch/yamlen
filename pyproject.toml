@@ -30,10 +30,11 @@ codecov = "^2.1.11"
 black = "^21.6b0"
 
 [tool.pytest.ini_options]
-testpaths = ["yamlen", "tests"]
+testpaths = ["yamlen", "tests", "README.md"]
 flake8-max-line-length = 99
 mccabe-complexity = 10
 addopts = [
+    "--doctest-glob=*.md",
     "--flake8",
     "--mypy",
     "--mypy-ignore-missing-imports",
