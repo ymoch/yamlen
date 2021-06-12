@@ -57,16 +57,6 @@ class Tag(ABC):
     def construct_by_context(self, context: Context):
         """Construct a tag."""
 
-    @abstractmethod
-    def construct(
-        self,
-        loader: Loader,
-        constructor: BaseConstructor,
-        node: Node,
-        origin: str = ".",
-    ) -> object:
-        """Construct a tag."""
-
 
 class Loader:
     def __init__(self):
