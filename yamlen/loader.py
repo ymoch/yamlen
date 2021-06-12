@@ -60,7 +60,7 @@ class Tag(ABC):
 
 class Loader:
     def __init__(self):
-        self._origin = "."
+        self._origin: Optional[str] = None
 
         class _Ctor(SafeConstructor):
             pass
@@ -79,7 +79,7 @@ class Loader:
     def add_tag(self, name: str, tag: Tag) -> None:
         self._ctor.add_constructor(name, partial(self._apply_tag, tag))
 
-    def load(self, stream: TextIO, origin: str = ".") -> object:
+    def load(self, stream: TextIO, origin: Optional[str] = None) -> object:
         try:
             with self._on_origin(origin):
                 return _load(stream, self._Loader)
@@ -94,7 +94,7 @@ class Loader:
         except FileNotFoundError as error:
             raise YamlenError(cause=error)
 
-    def load_all(self, stream: TextIO, origin: str = ".") -> Iterator:
+    def load_all(self, stream: TextIO, origin: Optional[str] = None) -> Iterator:
         try:
             with self._on_origin(origin):
                 yield from _load_all(stream, self._Loader)
@@ -115,7 +115,7 @@ class Loader:
             return tag.construct_by_context(context)
 
     @contextmanager
-    def _on_origin(self, origin: str) -> Iterator:
+    def _on_origin(self, origin: Optional[str]) -> Iterator:
         original = self._origin
         self._origin = origin
         try:
