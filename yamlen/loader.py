@@ -19,6 +19,8 @@ from yaml.scanner import Scanner
 
 from .error import YamlenError, on_node
 
+__all__ = ["Context", "Tag", "Loader"]
+
 
 class Context:
     def __init__(
@@ -51,13 +53,9 @@ class Context:
 
 
 class Tag(ABC):
+    @abstractmethod
     def construct_by_context(self, context: Context):
-        return self.construct(
-            context.loader,
-            context.constructor,
-            context.node,
-            context.origin,
-        )
+        """Construct a tag."""
 
     @abstractmethod
     def construct(

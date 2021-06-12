@@ -5,12 +5,20 @@ import re
 from yaml import Node, ScalarNode
 from yaml.constructor import BaseConstructor
 
-from yamlen.loader import Loader, Tag
+from yamlen.loader import Context, Loader, Tag
 
 _WILDCARDS_REGEX = re.compile(r"^.*(\*|\?|\[!?.+]).*$")
 
 
 class InclusionTag(Tag):
+    def construct_by_context(self, context: Context):
+        return self.construct(
+            context.loader,
+            context.constructor,
+            context.node,
+            context.origin,
+        )
+
     def construct(
         self,
         loader: Loader,
