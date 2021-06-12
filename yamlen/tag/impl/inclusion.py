@@ -4,13 +4,15 @@ import re
 
 from yaml import ScalarNode
 
-from yamlen.loader import Context, Tag
+from yamlen.loader import TagContext, Tag
+
+__all__ = ("InclusionTag",)
 
 _WILDCARDS_REGEX = re.compile(r"^.*(\*|\?|\[!?.+]).*$")
 
 
 class InclusionTag(Tag):
-    def construct_by_context(self, context: Context):
+    def construct_by_context(self, context: TagContext):
         node = context.node
         if not isinstance(node, ScalarNode):
             raise ValueError(f"expected a scalar node, but found {node.tag}")
