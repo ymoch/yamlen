@@ -9,7 +9,7 @@ from yamlen.loader import Loader, Tag
 
 
 class BypassTag(Tag):
-    def construct_by_context(self, context: TagContext):
+    def construct(self, context: TagContext) -> object:
         node = context.node
         assert isinstance(node, ScalarNode)
         return context.constructor.construct_scalar(node)

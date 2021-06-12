@@ -6,7 +6,7 @@ import os
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from functools import partial
-from typing import Iterator, Optional, TextIO
+from typing import Any, Iterator, Optional, TextIO
 
 from yaml import Node, MarkedYAMLError
 from yaml import load as _load, load_all as _load_all
@@ -54,7 +54,7 @@ class TagContext:
 
 class Tag(ABC):
     @abstractmethod
-    def construct_by_context(self, context: TagContext):
+    def construct(self, context: TagContext) -> Any:
         """Construct a tag."""
 
 
@@ -112,7 +112,7 @@ class Loader:
     def _apply_tag(self, tag: Tag, ctor: BaseConstructor, node: Node) -> object:
         context = TagContext(loader=self, constructor=ctor, node=node, origin=self._origin)
         with on_node(node):
-            return tag.construct_by_context(context)
+            return tag.construct(context)
 
     @contextmanager
     def _on_origin(self, origin: Optional[str]) -> Iterator:
