@@ -16,6 +16,16 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - deploy:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^[0-9]+(\.[0-9]+)*$/
+          requires:
+            - test-3-9
+            - test-3-8
+            - test-3-7
 
 jobs:
   test-3-9:
@@ -42,6 +52,18 @@ jobs:
       - prepare
       - unit-test
 
+  deploy:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - prepare
+      - run:
+          name: Publish
+          command: |
+            poetry build
+            poetry publish
+
 commands:
   prepare:
     description: Prepare
@@ -52,6 +74,7 @@ commands:
       - run:
           name: Install dependency
           command: poetry install
+
   unit-test:
     description: Unit test
     steps:
