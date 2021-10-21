@@ -41,6 +41,17 @@ def test_given_invalid_inclusion(loader, content, expected_message):
     assert expected_message in str(error_info.value)
 
 
+def test_given_current_directory_inclusion(mocker, loader):
+    open_mock = mocker.patch("builtins.open")
+    open_mock.return_value = StringIO("xxx")
+
+    stream = StringIO("!include foo.yml")
+    actual = loader.load(stream, origin="")
+    assert actual == "xxx"
+
+    open_mock.assert_called_once_with("foo.yml")
+
+
 def test_given_recursive_inclusion_error(mocker, loader):
     open_mock = mocker.patch("builtins.open")
     open_mock.return_value = StringIO("\n !foo")
