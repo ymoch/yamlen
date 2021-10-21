@@ -14,7 +14,7 @@ _WILDCARDS_REGEX = re.compile(r"^.*(\*|\?|\[!?.+]).*$")
 class InclusionTag(Tag):
     def construct(self, node: Node, context: TagContext) -> object:
         origin = context.origin
-        if not origin:
+        if origin is None:
             raise ValueError(
                 "cannot decide the target directory because no origin path is given"
             )
