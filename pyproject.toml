@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "yamlen"
-version = "0.1.0"
+version = "0.1.1"
 description = "A PyYAML thin wrapper."
 authors = ["Yu Mochizuki <ymoch.dev@gmail.com>"]
 readme = "README.md"
