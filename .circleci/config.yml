@@ -4,6 +4,10 @@ workflows:
   version: 2
   test-and-deploy:
     jobs:
+      - test-3-10:
+          filters:
+            tags:
+              only: /.*/
       - test-3-9:
           filters:
             tags:
@@ -28,6 +32,14 @@ workflows:
             - test-3-7
 
 jobs:
+  test-3-10:
+    docker:
+      - image: circleci/python:3.10
+    steps:
+      - checkout
+      - prepare
+      - unit-test
+
   test-3-9:
     docker:
       - image: circleci/python:3.9
